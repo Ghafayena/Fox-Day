@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fox Day Adventure Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Arial", sans-serif;
+      background: linear-gradient(to bottom, #a3d4f7, #ffffff);
+      overflow: hidden;
+    }
+
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('https://i.imgur.com/oYiTqum.png'); /* خلفية بسيطة */
+      background-size: cover;
+    }
+
+    .fox {
+      position: absolute;
+      bottom: 20px;
+      left: 50px;
+      width: 50px;
+      height: 50px;
+      background-image: url('https://i.imgur.com/OYVpe2W.png'); /* صورة الثعلب */
+      background-size: cover;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div class="fox" id="fox"></div>
+  </div>
+
+  <script>
+    const fox = document.getElementById("fox");
+    let posX = 50;
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") {
+        posX += 10;
+        fox.style.left = posX + "px";
+      } else if (e.key === "ArrowLeft") {
+        posX -= 10;
+        fox.style.left = posX + "px";
+      }
+    });
+  </script>
+</body>
+</html>
