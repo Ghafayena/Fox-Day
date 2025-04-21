@@ -1,0 +1,212 @@
+# Create a basic React game project structure with a countdown timer and collectible coins
+
+project_files = {
+    "Fox/src/index.tsx": '''
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+const root = ReactDOM.createRoot(document.getElementById("root")!);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+''',
+
+    "Fox/src/App.tsx": '''
+import React, { useEffect, useRef, useState } from "react";
+import foxImage from "./fox.png";
+import coinImage from "./coin.png";
+import "./App.css";
+
+interface Coin {
+  x: number;
+  y: number;
+  collected: boolean;
+}
+
+function App() {
+  const [foxX, setFoxX] = useState(100);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const gameAreaRef = useRef<HTMLDivElement>(null);
+  const [coins, setCoins] = useState<Coin[]>([]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        setFoxX((prev) => Math.min(prev + 20, 580));
+      } else if (e.key === "ArrowLeft") {
+        setFoxX((prev) => Math.max(prev - 20, 0));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) clearInterval(interval);
+        return prev - 1;
+      });
+    }, 1000);
+
+    const initialCoins: Coin[] = Array.from({ length: 10 }, (_, i) => ({
+      x: Math.random() * 560,
+      y: Math.random() * 300 + 100,
+      collected: false,
+    }));
+    setCoins(initialCoins);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    setCoins((prevCoins) =>
+      prevCoins.map((coin) =>
+        !coin.collected && Math.abs(foxX - coin.x) < 30 ? { ...coin, collected: true } : coin
+      )
+    );
+    setScore((prevScore) => prevScore + coins.filter(c => !c.collected && Math.abs(foxX - c.x) < 30).length);
+  }, [foxX]);
+
+  return (
+    <div className="game-container">
+      {timeLeft > 0 ? (
+        <>
+          <div className="hud">
+            <div>Time Left: {timeLeft}s</div>
+            <div>Score: {score}</div>
+          </div>
+          <div className="game-area" ref={gameAreaRef}>
+            <img src={foxImage} className="fox" style={{ left: foxX }} />
+            {coins.map((coin, i) =>
+              !coin.collected ? (
+                <img
+                  key={i}
+                  src={coinImage}
+                  className="coin"
+                  style={{ left: coin.x, top: coin.y }}
+                />
+              ) : null
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="game-over">Game Over! Final Score: {score}</div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+''',
+
+    "Fox/src/App.css": '''
+.game-container {
+  font-family: sans-serif;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.game-area {
+  position: relative;
+  width: 600px;
+  height: 400px;
+  margin: 0 auto;
+  background-color: #eef;
+  border: 3px solid #444;
+  overflow: hidden;
+}
+
+.fox {
+  position: absolute;
+  bottom: 0;
+  width: 50px;
+  transition: left 0.2s;
+}
+
+.coin {
+  position: absolute;
+  width: 30px;
+}
+
+.game-over {
+  font-size: 32px;
+  color: red;
+  margin-top: 50px;
+}
+''',
+
+    "Fox/public/index.html": '''
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play Fox Game</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+''',
+
+    "Fox/src/fox.png": "fox-image-placeholder",
+    "Fox/src/coin.png": "coin-image-placeholder",
+    "Fox/package.json": '''
+{
+  "name": "fox",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://Ghafayena.github.io/Fox",
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  },
+  "devDependencies": {
+    "gh-pages": "^5.0.0"
+  }
+}
+'''
+}
+
+# Save the files to a new folder and compress it
+import os
+
+base_path = "/mnt/data/Fox"
+for path, content in project_files.items():
+    full_path = os.path.join("/mnt/data", path)
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+    if path.endswith(".png"):
+        with open(full_path, "wb") as f:
+            f.write(b"")  # Placeholder for image
+    else:
+        with open(full_path, "w") as f:
+            f.write(content)
+
+# Create zip file
+zip_path = shutil.make_archive("/mnt/data/Fox", 'zip', base_path)
+zip_path
